@@ -62,6 +62,8 @@ void NBAFinalsOutcomes()
   h_chisq->SetTitle("compatibility distribution");
   h_chisq->GetXaxis()->SetTitle("#chi^{2}");
   h_chisq->GetYaxis()->SetTitle("N_{toys}");
+  h_chisq->SetMarkerStyle(20);
+  h_chisq->SetMarkerSize (0.5);
 
   int year[70] = {
     2016,
@@ -235,6 +237,12 @@ void NBAFinalsOutcomes()
   h_winsloser->Draw("pe");
   h_NULL     ->Draw("pe,same");
 
+  TLegend *leg1 = new TLegend(0.5,0.2,0.89,0.4);
+  leg1->AddEntry(h_winsloser, "historical data","PL");
+  leg1->AddEntry(h_NULL     , "ideal distribution (50% / 50%)","PL");
+  leg1->Draw();
+
+
   double chisq_data = CalcChiSq(h_winsloser,h_NULL,1,4);
 
   cout << "chisq/ndf = " << chisq_data << "/3 = " << chisq_data/3.0 << endl;
@@ -269,20 +277,28 @@ void NBAFinalsOutcomes()
   h2_toys->Draw("colz");
 
 
+
   c2->cd(2);
   f_chisq = new TF1("f_chisq","[1]*(pow(x,[0]/2-1)*TMath::Exp(-x/2))/(pow(2,[0]/2)*TMath::Gamma([0]/2))",0,50);
   f_chisq->SetParameter(1,1);
   f_chisq->SetParameter(0,3);
   f_chisq->SetParameter(1,h_chisq->Integral(-1,-1,"width")/f_chisq->Integral(0,50));
-  f_chisq->SetLineColor(1);
+  f_chisq->SetLineColor(8);
   f_chisq->SetLineWidth(2);
   f_chisq->SetLineStyle(2);
   f_chisq->Draw("same");
 
   TLine *linedata = new TLine(chisq_data,0,chisq_data,h_chisq->GetMaximum());
   linedata->SetLineStyle(2);
+  linedata->SetLineWidth(2);
   linedata->SetLineColor(2);
   linedata->Draw("same");
+
+  TLegend *leg2 = new TLegend(0.5,0.5,0.89,0.7);
+  leg2->AddEntry(h_chisq, "toy distribution","PL");
+  leg2->AddEntry(f_chisq, "ideal #chi^{2}, ndf = 3","L");
+  leg2->AddEntry(linedata,"#chi^{2} of data","L");
+  leg2->Draw();
 
   cout << "p-value = " << h_chisq->Integral(h_chisq->GetXaxis()->FindBin(chisq_data)+1,-1)/h_chisq->Integral(-1,-1) << endl;
 
