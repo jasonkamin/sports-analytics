@@ -49,9 +49,19 @@ void NBAFinalsOutcomes()
 {
 
   h_winsloser = new TH1D("h_winsloser","h_winsloser",6,-0.5,5.5);
+  h_winsloser->SetTitle("metric");
+  h_winsloser->GetXaxis()->SetTitle("N_{wins} by losing team");
+  h_winsloser->GetYaxis()->SetTitle("N_{finals}");
   h2_toys     = new TH2D("h2_toys","h2_toys", 6,-0.5,5.5, 51,-0.5,50.5);
+  h2_toys->SetTitle("toy distributions");
+  h2_toys->GetXaxis()->SetTitle("N_{wins} by losing team");
+  h2_toys->GetYaxis()->SetTitle("N_{finals}");
+  h2_toys->GetZaxis()->SetTitle("N_{toys}");
 
   h_chisq = new TH1D("h_chisq","h_chisq",200,0,40);
+  h_chisq->SetTitle("compatibility distribution");
+  h_chisq->GetXaxis()->SetTitle("#chi^{2}");
+  h_chisq->GetYaxis()->SetTitle("N_{toys}");
 
   int year[70] = {
     2016,
@@ -225,7 +235,9 @@ void NBAFinalsOutcomes()
   h_winsloser->Draw("pe");
   h_NULL     ->Draw("pe,same");
 
-  cout << "chisq/ndf = " << CalcChiSq(h_winsloser,h_NULL,1,4) << "/4 = " <<CalcChiSq(h_winsloser,h_NULL,1,4)/4.0 << endl;
+  double chisq_data = CalcChiSq(h_winsloser,h_NULL,1,4);
+
+  cout << "chisq/ndf = " << chisq_data << "/3 = " << chisq_data/3.0 << endl;
 
 
 
@@ -267,6 +279,12 @@ void NBAFinalsOutcomes()
   f_chisq->SetLineStyle(2);
   f_chisq->Draw("same");
 
+  TLine *linedata = new TLine(chisq_data,0,chisq_data,h_chisq->GetMaximum());
+  linedata->SetLineStyle(2);
+  linedata->SetLineColor(2);
+  linedata->Draw("same");
+
+  cout << "p-value = " << h_chisq->Integral(h_chisq->GetXaxis()->FindBin(chisq_data)+1,-1)/h_chisq->Integral(-1,-1) << endl;
 
 
 
