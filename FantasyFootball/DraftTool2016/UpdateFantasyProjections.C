@@ -70,10 +70,15 @@ void UpdateFantasyProjections()
   sprintf(TheTECondition,"%s && Position==\"TE\" && ProjPoints>1",TheCondition);
   MyTree->Draw("ProjPoints/16.0>>h_te",TheTECondition);
 
-  TellMe_HighestPlayers("QB",TheQBCondition,5);
-  TellMe_HighestPlayers("RB",TheRBCondition,5);
-  TellMe_HighestPlayers("WR",TheWRCondition,5);
-  TellMe_HighestPlayers("TE",TheTECondition,5);
+  char qbtext[5]; sprintf(qbtext,"QB");
+  char rbtext[5]; sprintf(rbtext,"RB");
+  char wrtext[5]; sprintf(wrtext,"WR");
+  char tetext[5]; sprintf(tetext,"TE");
+
+  TellMe_HighestPlayers(qbtext,TheQBCondition,5);
+  TellMe_HighestPlayers(rbtext,TheRBCondition,5);
+  TellMe_HighestPlayers(wrtext,TheWRCondition,5);
+  TellMe_HighestPlayers(tetext,TheTECondition,5);
 
   double qb_max  = 0.0;
   double rb_max  = 0.0;
