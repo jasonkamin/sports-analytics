@@ -158,7 +158,6 @@ S.Smith
 M.Nugent
 P.Garcon
 Rams
-D.Hopkins
 T.Riddick
 T.Williams
 E.Ebron
@@ -303,7 +302,6 @@ A.Blue
 J.HillTE
 A.Hooper
 C.Gillmore
-J.Nelson
 P.Cooper
 W.Smallwood
 A.Morris
@@ -473,7 +471,6 @@ J.Rodgers
 B.Williams
 M.Mariani
 P.Supernaw
-D.Thomas
 D.Hester
 T.Hill
 G.Swaim
@@ -500,7 +497,6 @@ A.Smith
 Z.Miller
 O.Charles
 C.Ford
-A.Robinson
 B.Bostick
 M.Williams
 C.Pantale
@@ -636,7 +632,6 @@ P.Parker
 J.Jernigan
 G.Little
 R.Lockette
-A.Robinson
 T.Doss
 D.Bowe
 J.Jones
@@ -767,7 +762,6 @@ J.Dwyer
 T.Gerhart
 D.Karim
 K.Hunter
-D.Thomas
 A.Bradshaw
 B.Leonard
 M.Lynch

@@ -11,6 +11,7 @@ char TheQBCondition[12000];
 char TheRBCondition[12000];
 char TheWRCondition[12000];
 char TheTECondition[12000];
+char TheConditionJJ[12000];
 //char PreviousCondition[12000];
 char NextPlayer[50];
 
@@ -41,22 +42,26 @@ void UpdateFantasyProjections()
   f_gaus_te = new TF1("f_gaus_te","gaus(0)",0,25);
 
   ifstream fin;
-  fin.open("PlayersTaken.txt");
-  fin >> NextPlayer;
-  //sprintf(TheCondition,"ProjPoints>1 && Position!=\"K\" && Position!=\"DST\" && ");
-  //sprintf(TheCondition,"PlayerName!=\"%s\"",NextPlayer);
-  sprintf(TheCondition,"ProjPoints>1 && Position!=\"K\" && Position!=\"DST\" && PlayerName!=\"%s\"",NextPlayer);
-  while(!fin.eof()){
-
+  //fin.open("PlayersTaken.txt");
+  fin.open("DraftedList.txt");
+  if(fin){
     fin >> NextPlayer;
-    sprintf(TheCondition,"%s && PlayerName!=\"%s\"",TheCondition,NextPlayer);
-
+    //sprintf(TheCondition,"ProjPoints>1 && Position!=\"K\" && Position!=\"DST\" && ");
+    //sprintf(TheCondition,"PlayerName!=\"%s\"",NextPlayer);
+    sprintf(TheCondition,"ProjPoints>1 && Position!=\"K\" && Position!=\"DST\" && PlayerName!=\"%s\"",NextPlayer);
+    while(!fin.eof()){
+      fin >> NextPlayer;
+      sprintf(TheCondition,"%s && PlayerName!=\"%s\"",TheCondition,NextPlayer);
+    }
+  }
+  else{
+    sprintf(TheCondition,"ProjPoints>1 && Position!=\"K\" && Position!=\"DST\"");
   }
 
   //sprintf(PreviousCondition,"PlayerName!=\"A.Rodgers\"");
   //sprintf(TheCondition,"%s && PlayerName!=\"%s\"",PreviousCondition,TheCondition);
 
-  cout << TheCondition << endl;
+  cout << endl << TheCondition << endl;
 
   TCanvas *c1 = new TCanvas("c1","c1");
 
@@ -70,11 +75,67 @@ void UpdateFantasyProjections()
   sprintf(TheTECondition,"%s && Position==\"TE\" && ProjPoints>1",TheCondition);
   MyTree->Draw("ProjPoints/16.0>>h_te",TheTECondition);
 
-  char qbtext[5]; sprintf(qbtext,"QB");
-  char rbtext[5]; sprintf(rbtext,"RB");
-  char wrtext[5]; sprintf(wrtext,"WR");
-  char tetext[5]; sprintf(tetext,"TE");
 
+  //########### Get My Team ############
+  ifstream fin_myteam;
+  fin_myteam.open("DraftedTeam_1.txt");
+  TLine* lMyTeam[17];
+  Char_t PlayerNameJJ[17][50];
+  Char_t PositionJJ[5];
+  Double_t ProjPointsJJ[17];
+  int linecolor[17];
+  int iSizeMyTeam = 0;
+  if(fin_myteam){
+    while(!fin_myteam.eof()){
+      fin_myteam >> PlayerNameJJ[iSizeMyTeam];
+      sprintf(TheConditionJJ,"PlayerName==\"%s\"",PlayerNameJJ[iSizeMyTeam]);
+
+      sprintf(saythis,"ProjPoints/16.0>>htempPoints_%d",iSizeMyTeam);
+      MyTree->Draw(saythis,TheConditionJJ);
+      sprintf(saythis,"htempPoints_%d",iSizeMyTeam);
+      TH1D *htemp1 = (TH1D*)gDirectory->Get(saythis);
+      ProjPointsJJ[iSizeMyTeam] = htemp1->GetMean();
+
+      sprintf(saythis,"Position>>htempPosition_%d",iSizeMyTeam);
+      MyTree->Draw(saythis,TheConditionJJ);
+      sprintf(saythis,"htempPosition_%d",iSizeMyTeam);
+      TH1D *htemp2 = (TH1D*)gDirectory->Get(saythis);
+      sprintf(PositionJJ,"%s",htemp2->GetXaxis()->GetBinLabel(1));
+
+      if(strcmp(PositionJJ,"QB")==0)
+        linecolor[iSizeMyTeam] = 2;
+      if(strcmp(PositionJJ,"RB")==0)
+        linecolor[iSizeMyTeam] = 4;
+      if(strcmp(PositionJJ,"WR")==0)
+        linecolor[iSizeMyTeam] = 6;
+      if(strcmp(PositionJJ,"TE")==0)
+        linecolor[iSizeMyTeam] = 8;
+
+      lMyTeam[iSizeMyTeam] = new TLine(ProjPointsJJ[iSizeMyTeam],0,ProjPointsJJ[iSizeMyTeam],100);
+      lMyTeam[iSizeMyTeam]->SetLineColor(linecolor[iSizeMyTeam]);
+      lMyTeam[iSizeMyTeam]->SetLineStyle(2);
+
+      iSizeMyTeam++;
+    }
+  }
+
+  cout << endl << endl << "#################################" << endl;
+  cout << "I have already drafted " << iSizeMyTeam-1 << " players: " << endl;
+  for(int i=0; i<iSizeMyTeam-1; i++){
+    cout << i+1 << "  " << printf("%2.1f",ProjPointsJJ[i]) << "  " << PlayerNameJJ[i] << endl;
+  }
+  cout << "#################################" << endl << endl;
+
+  //########### Get My Team ############
+
+
+  char ALtext[11]; sprintf(ALtext,"All Players");
+  char qbtext[5];  sprintf(qbtext,"QB");
+  char rbtext[5];  sprintf(rbtext,"RB");
+  char wrtext[5];  sprintf(wrtext,"WR");
+  char tetext[5];  sprintf(tetext,"TE");
+
+  TellMe_HighestPlayers(ALtext,TheCondition, 10);
   TellMe_HighestPlayers(qbtext,TheQBCondition,5);
   TellMe_HighestPlayers(rbtext,TheRBCondition,5);
   TellMe_HighestPlayers(wrtext,TheWRCondition,5);
@@ -141,7 +202,6 @@ void UpdateFantasyProjections()
   FitWithGaus(h_rb,f_gaus_rb);
   FitWithGaus(h_wr,f_gaus_wr);
   FitWithGaus(h_te,f_gaus_te);
-  
 
   h_qb->SetFillColor(kRed-7);
   h_rb->SetFillColor(kBlue-7);
@@ -158,7 +218,8 @@ void UpdateFantasyProjections()
   h_wr->GetXaxis()->SetRange(0, wr_maxb);
   h_te->GetXaxis()->SetRange(0, te_maxb);
 
-  h_al->SetTitle("Jagoffs Fantasy Football Draft");
+  //h_al->SetTitle("Jagoffs Fantasy Football Draft");
+  h_al->SetTitle("Jason's Fantasy Football Draft");
   h_al->GetXaxis()->SetTitle("Projected Points per Game");
   h_al->GetYaxis()->SetTitle("Number of Players Available");
   h_al->Draw("");
@@ -166,6 +227,11 @@ void UpdateFantasyProjections()
   h_rb->Draw("same");
   h_wr->Draw("same");
   h_te->Draw("same");
+
+
+  for(int i=0; i<iSizeMyTeam-1; i++)
+    lMyTeam[i]->Draw("same");
+
 
   TLegend *leg1 = new TLegend(0.5,0.6,0.89,0.89);
   leg1->SetFillColor(0);
@@ -179,6 +245,8 @@ void UpdateFantasyProjections()
   leg1->AddEntry(h_te,saythis,"L");
   leg1->Draw();
 
+  c1->SaveAs("liveUpdatedCanvas.gif");
+  c1->SaveAs("liveUpdatedCanvas.pdf");
 
 
 }
@@ -217,7 +285,7 @@ void FitWithGaus(TH1D *h1, TF1 *f1)
 void TellMe_HighestPlayers(char *Position, char *ListOfPlayers, int nPlayersToList)
 {
 
-  cout << endl << "Top " << nPlayersToList << " " << Position << ": " << endl;
+  cout << "Top " << nPlayersToList << " " << Position << ": " << endl;
 
   TH1D *htemp = new TH1D("htemp","htemp",1000,0.5,1000.5);
   MyTree->Draw("PlayerRank>>htemp",ListOfPlayers);
@@ -243,6 +311,8 @@ void TellMe_HighestPlayers(char *Position, char *ListOfPlayers, int nPlayersToLi
       break;
   }
   htemp->Delete();
+
+  cout << endl;
 
   return;
 
